@@ -6,13 +6,20 @@ import { motion } from 'framer-motion';
 import {Link} from 'react-router-dom'
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import {app} from '../firebase.config'
+import { useStateValue } from '../context/StateProvider';
+import { actionType } from '../context/reducer';
 const Header = () => {
 
   const firebaseAuth = getAuth(app);
   const provider =  new GoogleAuthProvider();
+  const [{user}, dispatch] = useStateValue()
   const login = async () => {
-    const response = await signInWithPopup(firebaseAuth,provider)
-    console.log(response);
+    const {user: {refreshToken,providerData}} = await signInWithPopup(firebaseAuth,provider);
+    // dispach providerData to our context
+    dispatch({
+      type: actionType.SET_USER,
+      user: providerData[0]
+    });
 
   }
   return (
@@ -50,7 +57,7 @@ const Header = () => {
           </div>
           {/* user avatar */}
           <div className='relative'>
-            <motion.img
+            <motion.img 
               whileTap={{ scale: 0.6 }}
               src={Avatar}
               className="cursor-pointer w-8 min-w-[32px] h-8 rounded-full min-h-[32px] drop-shadow-xl"
